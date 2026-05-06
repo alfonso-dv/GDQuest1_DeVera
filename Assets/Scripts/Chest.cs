@@ -16,6 +16,9 @@ public class Chest : MonoBehaviour
     [SerializeField]
     private GameObject chestLid;
 
+    [SerializeField]
+    private ParticleSystem openParticlesPrefab;
+
     void Start()
     {
         this.interactAction = InputSystem.actions.FindAction("Interact");
@@ -31,6 +34,15 @@ public class Chest : MonoBehaviour
                 this.Open.position,
                 this.Open.rotation
             );
+
+            if (this.openParticlesPrefab != null)
+            {
+                Instantiate(
+                    this.openParticlesPrefab,
+                    this.chestLid.transform.position,
+                    Quaternion.identity
+                );
+            }
         }
         else
         {

@@ -7,32 +7,24 @@ public class Character : MonoBehaviour
     private float jumpCooldownTimer;
 
     private CharacterController controller;
+    private Animator animator;
     private InputAction moveAction;
     private InputAction jumpAction;
 
-    [SerializeField]
-    private float jumpCooldown;
+    [SerializeField] private float jumpCooldown;
+    [SerializeField] private float gravity;
+    [SerializeField] private float characterSpeed;
+    [SerializeField] private float jumpSpeed;
+    [SerializeField] private float dampening;
+    [SerializeField] private Transform cameraTransform;
+    [SerializeField] private float pushStrength = 1f;
+    [SerializeField] private Transform currentCheckpoint;
 
-    [SerializeField]
-    private float gravity;
+    [SerializeField] private AudioSource footstepAudio;
+    [SerializeField] private AudioSource soundEffectAudio;
+    [SerializeField] private AudioClip jumpSound;
 
-    [SerializeField]
-    private float characterSpeed;
-
-    [SerializeField]
-    private float jumpSpeed;
-
-    [SerializeField]
-    private float dampening;
-
-    [SerializeField]
-    private Transform cameraTransform;
-
-    [SerializeField]
-    private float pushStrength = 1f;
-
-    [SerializeField]
-    private Transform currentCheckpoint;
+    [SerializeField] private ParticleSystem walkingParticles;
 
     private Vector3 characterMovement;
     private Vector3 jumpVelocity;
@@ -42,10 +34,50 @@ public class Character : MonoBehaviour
     void Start()
     {
         this.controller = this.GetComponent<CharacterController>();
+        this.animator = this.GetComponent<Animator>();
+
         this.moveAction = InputSystem.actions.FindAction("Move");
         this.jumpAction = InputSystem.actions.FindAction("Jump");
+
         this.jumpCooldownTimer = 0.0f;
     }
+
+    void SetAnimationState(Vector2 inputMovement)
+    {
+        this.animator.SetBool("IsJumping", this.isJumping);
+        this.animator.SetBool("IsRunning", inputMovement != Vector2.zero);
+        this.animator.SetFloat("MovementForward", inputMovement.magnitude);
+    }
+
+    void HandleFootsteps(Vector2 inputMovement)
+        {
+            bool isMoving = inputMovement != Vector2.zero;
+
+            if (isMoving && this.controller.isGrounded && !this.isJumping)
+            {
+                if (!this.footstepAudio.isPlaying)
+                {
+                    this.footstepAudio.Play();
+                }
+
+                if (this.walkingParticles != null && !this.walkingParticles.isPlaying)
+                {
+                    this.walkingParticles.Play();
+                }
+            }
+            else
+            {
+                if (this.footstepAudio.isPlaying)
+                {
+                    this.footstepAudio.Stop();
+                }
+
+                if (this.walkingParticles != null && this.walkingParticles.isPlaying)
+                {
+                    this.walkingParticles.Stop();
+                }
+            }
+        }
 
     void HandleJumping()
     {
@@ -62,6 +94,8 @@ public class Character : MonoBehaviour
             this.jumpVelocity.y = this.jumpSpeed;
             this.jumpCooldownTimer = this.jumpCooldown;
             this.isJumping = true;
+
+            this.soundEffectAudio.PlayOneShot(this.jumpSound);
         }
 
         if (this.jumpVelocity.y > 0.0f)
@@ -114,6 +148,9 @@ public class Character : MonoBehaviour
 
         Vector2 inputMovement = this.moveAction.ReadValue<Vector2>();
 
+        this.SetAnimationState(inputMovement);
+        this.HandleFootsteps(inputMovement);
+
         Vector3 inputRightDirection = this.cameraTransform.right;
         Vector3 inputForwardDirection = this.cameraTransform.forward;
 
@@ -138,12 +175,15 @@ public class Character : MonoBehaviour
 
         this.characterMovement *= (1 - this.dampening);
 
-        Vector3 characterForward = this.characterMovement;
-        characterForward.y = 0.0f;
+        Vector3 inputDirection =
+            inputRightDirection * inputMovement.x +
+            inputForwardDirection * inputMovement.y;
 
-        if (characterForward.sqrMagnitude > 0.0f)
+        inputDirection.y = 0.0f;
+
+        if (inputDirection.sqrMagnitude > 0.01f)
         {
-            this.transform.forward = characterForward.normalized;
+            this.transform.forward = inputDirection.normalized;
         }
 
         Vector3 combinedMovement = this.characterMovement + this.platformVelocity * Time.fixedDeltaTime;
@@ -152,6 +192,23 @@ public class Character : MonoBehaviour
 
     void OnControllerColliderHit(ControllerColliderHit hit)
     {
+       EnemySquash enemy = hit.collider.GetComponentInParent<EnemySquash>();
+
+        if (enemy != null)
+        {
+            Debug.Log("Touched enemy");
+
+            bool playerIsAboveEnemy = this.transform.position.y > enemy.transform.position.y + 0.3f;
+
+            if (playerIsAboveEnemy)
+            {
+                Debug.Log("Squashing enemy");
+                enemy.SquashEnemy();
+            }
+
+            return;
+        }   
+
         if (!hit.gameObject.CompareTag("Crate"))
         {
             return;
