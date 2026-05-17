@@ -7456,7 +7456,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   jumpCooldown: 0.2
   gravity: -3
-  characterSpeed: 0.5
+  characterSpeed: 0.35
   jumpSpeed: 1.2
   dampening: 0.1
   cameraTransform: {fileID: 951829846}
@@ -45367,7 +45367,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c6c0545c32a35354fadf3d0ecff757cf, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.08
+      value: 8.39
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c6c0545c32a35354fadf3d0ecff757cf, type: 3}
       propertyPath: m_LocalPosition.y
