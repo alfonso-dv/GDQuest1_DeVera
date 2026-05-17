@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="Parent" style="flex-grow: 1; top: 483px; max-height: 100px; background-image: url(&quot;project://database/Assets/KenneyRPGUI/PNG/buttonLong_brown.png?fileID=2800000&amp;guid=e1b37c399f270ee40b1efce762deb577&amp;type=3#buttonLong_brown&quot;);">
+        <ui:Label text="Label" style="white-space: normal; font-size: 25px; top: 11px; max-width: 978px; left: 25px; height: 64px; width: 977px;"/>
+    </ui:VisualElement>
+</ui:UXML>
